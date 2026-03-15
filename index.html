@@ -39,16 +39,28 @@
   }
   .page{display:none;min-height:100vh;}
   .page.active{display:flex;flex-direction:column;}
-  .site-header{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(8px);z-index:100;}
+
+  /* HEADER */
+  .site-header{
+    padding:18px 32px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:16px;
+    position:sticky;top:0;
+    background:rgba(10,10,10,0.95);
+    backdrop-filter:blur(8px);
+    z-index:100;
+  }
   .site-logo{font-family:'Bebas Neue',cursive;font-size:24px;letter-spacing:4px;color:var(--accent);}
   .site-logo span{color:var(--text);}
   .step-indicator{margin-left:auto;display:flex;gap:8px;align-items:center;}
   .step-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:all .3s;}
   .step-dot.active{background:var(--accent);transform:scale(1.4);}
   .step-dot.done{background:var(--accent2);}
+
+  /* PAGE 1 */
   #page1{align-items:center;padding:52px 20px 80px;}
   .survey-container{width:100%;max-width:640px;}
-  .survey-title{font-family:'Bebas Neue',cursive;font-size:clamp(44px,8vw,76px);line-height:.9;letter-spacing:2px;margin-bottom:8px;}
+  .survey-title{font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(37px,7vw,69px);line-height:1.1;letter-spacing:-1px;margin-bottom:8px;}
   .survey-title .hl{color:var(--accent);}
   .survey-subtitle{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:48px;}
   .question-block{margin-bottom:34px;opacity:0;transform:translateY(20px);animation:fadeUp .5s forwards;}
@@ -66,8 +78,10 @@
   .q-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:13px 16px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
   .q-input:focus{border-color:var(--accent);}
   .q-input::placeholder{color:var(--muted);}
-  .btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;padding:15px 36px;font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:3px;cursor:pointer;border-radius:2px;transition:all .2s;margin-top:8px;}
+  .btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;padding:15px 36px;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all .2s;margin-top:8px;}
   .btn-primary:hover{background:#2563cc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,82,186,.4);}
+
+  /* PAGE 2 */
   #page2{flex-direction:column;padding-bottom:60px;}
   .instruction-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 28px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
   .instruction-bar .hi{color:var(--accent);}
@@ -76,12 +90,16 @@
   .panel-left{width:340px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;position:sticky;top:0;max-height:calc(100vh - 105px);overflow-y:auto;}
   .panel-right{flex:1;background:var(--bg);}
   .panel-title{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
+
+  /* LEGEND */
   .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
   .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
   .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
   .legend-dot.song{background:#161616;border:1.5px solid #3a3a3a;}
   .legend-dot.survey{background:var(--chip-survey);border:1.5px solid var(--chip-survey-border);}
   .legend-dot.vcr{background:var(--chip-vcr);border:1.5px solid var(--chip-vcr-border);}
+
+  /* CHIPS */
   .song-pool{display:flex;flex-direction:column;gap:6px;}
   .song-chip{border-radius:4px;padding:10px 13px;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;transition:all .15s;user-select:none;border:1.5px solid;}
   .song-chip.type-song{background:#161616;border-color:#3a3a3a;color:#f0f0f0;}
@@ -90,12 +108,15 @@
   .song-chip:hover{filter:brightness(1.35);transform:translateX(4px);}
   .song-chip.selected{outline:2px solid var(--accent);outline-offset:2px;transform:translateX(6px);}
   .chip-icon{font-size:12px;flex-shrink:0;}
+
   .add-song-area{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
   .add-song-row{display:flex;gap:8px;}
   .add-song-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:9px 12px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;}
   .add-song-input:focus{border-color:var(--accent2);}
   .btn-add{background:var(--accent2);color:#000;border:none;padding:9px 14px;font-family:'Bebas Neue',cursive;font-size:16px;cursor:pointer;border-radius:4px;}
   .btn-add:hover{opacity:.85;}
+
+  /* SLOTS */
   .setlist-header{display:flex;align-items:baseline;gap:12px;margin-bottom:18px;padding:24px 24px 0;}
   .setlist-main-title{font-family:'Bebas Neue',cursive;font-size:36px;letter-spacing:3px;}
   .setlist-main-title span{color:var(--accent);}
@@ -106,7 +127,7 @@
   .slot-number.encore{color:var(--muted);font-size:14px;width:52px;}
   .slot-number.encore.filled{color:var(--encore);}
   .slot-box{flex:1;min-height:46px;border:1.5px dashed var(--border);border-radius:4px;display:flex;align-items:center;padding:0 12px;transition:all .15s;cursor:pointer;position:relative;}
-  .slot-box:hover:not(.filled-slot){border-color:var(--accent);background:rgba(15,82,186,.05);}
+  .slot-box:hover:not(.filled-slot){border-color:var(--accent);background:rgba(255,60,60,.05);}
   .slot-box.ready-to-place{border-color:var(--accent);border-style:solid;animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(15,82,186,.3);}50%{box-shadow:0 0 0 6px rgba(15,82,186,0);}}
   .slot-box.filled-slot{border-style:solid;}
@@ -120,7 +141,7 @@
   .slot-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 6px;transition:color .2s;z-index:1;}
   .slot-remove:hover{color:var(--accent);}
   .btn-footer{padding:22px 24px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  .btn-next{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;padding:13px 30px;font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:3px;cursor:pointer;border-radius:2px;transition:all .2s;}
+  .btn-next{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;padding:13px 30px;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all .2s;}
   .btn-next:hover:not(:disabled){background:#2563cc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,82,186,.4);}
   .btn-next:disabled{background:var(--muted);cursor:not-allowed;}
   .slot-divider{margin:14px 0 10px;display:flex;align-items:center;gap:10px;padding:0 24px;}
@@ -130,6 +151,8 @@
   .result-song-name.encore{color:var(--encore);}
   .btn-clear{background:none;border:1px solid var(--border);color:var(--muted);padding:11px 18px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s;text-transform:uppercase;}
   .btn-clear:hover{color:var(--text);border-color:var(--muted);}
+
+  /* PAGE 3 */
   #page3{align-items:center;justify-content:flex-start;padding:32px 20px 80px;}
   .result-page-wrap{width:100%;max-width:520px;display:flex;flex-direction:column;gap:16px;}
   .save-hint{background:rgba(126,232,255,0.08);border:1px solid rgba(126,232,255,0.25);border-radius:8px;padding:14px 18px;font-family:'Space Mono',monospace;font-size:11px;color:#7ee8ff;letter-spacing:1px;text-align:center;line-height:1.8;}
@@ -153,10 +176,15 @@
   .answer-q{font-size:11px;color:var(--muted);margin-bottom:2px;}
   .answer-a{font-size:13px;font-weight:700;}
   .result-actions{display:flex;flex-direction:column;gap:12px;}
+  .btn-share{flex:1;min-width:120px;padding:12px 14px;border:none;border-radius:4px;font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:2px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-share-x{background:#000;color:#fff;border:1px solid #333;}
+  .btn-share-x:hover{background:#111;transform:translateY(-2px);}
   .btn-restart{flex:1;min-width:120px;padding:12px 14px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:4px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;cursor:pointer;transition:color .2s;text-transform:uppercase;text-align:center;}
   .btn-restart:hover{color:var(--text);border-color:var(--muted);}
+
   .screenshot-flash{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:9999;transition:opacity .1s;}
   .screenshot-flash.flash{opacity:.8;}
+
   @media(max-width:680px){
     .p2-inner{flex-direction:column;}
     .panel-left{width:100%;min-width:unset;max-height:none;border-right:none;border-bottom:1px solid var(--border);position:static;}
@@ -180,6 +208,7 @@
   <div class="survey-container">
     <div class="survey-title">💕두근두근<br>디노 콘서트<br><span class="hl">커스텀</span>💕</div>
     <div class="survey-subtitle">// DINO CONCERT BUILDER</div>
+
     <div class="question-block">
       <div class="q-label">Q.01 — CONCERT NAME</div>
       <div class="q-text">디노의 첫 번째 솔로 콘서트 이름을 짓는다면?</div>
@@ -212,6 +241,7 @@
       <div class="q-text">디노 솔로 콘서트에서 꼭 했으면 하는 특별 이벤트가 있다면?</div>
       <input class="q-input" id="q5" type="text" placeholder="ex) 팬과 함께 춤추기, 깜짝 게스트…">
     </div>
+
     <button class="btn-primary" onclick="goToPage2()">세트리스트 짜러 가기 →</button>
   </div>
 </div>
@@ -254,9 +284,12 @@
 <!-- PAGE 3 -->
 <div class="page" id="page3">
   <div class="result-page-wrap">
+    <!-- 안내 배너 (캡처 제외) -->
     <div class="save-hint" id="saveHint">
       📱 이미지를 <strong>꾹 눌러서</strong> 저장하거나 스크린샷을 찍어주세요!
     </div>
+
+    <!-- 캡처 대상: 헤더 + 트랙만 -->
     <div class="result-card" id="resultCard">
       <div class="result-card-header">
         <div class="result-artist">DINO — MY CONCERT SETLIST</div>
@@ -265,6 +298,8 @@
       </div>
       <div class="result-tracks" id="resultTracks"></div>
     </div>
+
+    <!-- 버튼 영역 (캡처 제외) -->
     <div class="result-actions" id="resultActions">
       <div class="result-answers" id="resultAnswers"></div>
       <button class="btn-restart" onclick="restart()">↺ 처음부터 다시</button>
@@ -279,6 +314,7 @@ const FIXED_SONGS = [
   'zero(hero)','high-five','이카루스','WAIT','trigger','til my fingers bleed'
 ];
 const VCR_ITEMS = ['VCR1','VCR2'];
+// slots: index 0~14 = 1번~15번, index 15 = 앵콜1, index 16 = 앵콜2
 const MAIN_SLOTS = 15;
 const TOTAL_SLOTS = 17;
 
@@ -315,13 +351,16 @@ function goToPage2() {
     '함께 부르고 싶은 단체곡': document.getElementById('q4').value.trim(),
     '콘서트 이벤트': document.getElementById('q5').value.trim(),
   };
+
   const surveyKeys = ['타이틀곡 분위기','수록곡 1','수록곡 2','함께 부르고 싶은 단체곡'];
   const surveyVals = surveyKeys.map(k => surveyAnswers[k]).filter(Boolean);
+
   pool = [
     ...FIXED_SONGS.map(s => ({name:s, type:'song'})),
     ...surveyVals.map(s => ({name:s, type:'survey'})),
     ...VCR_ITEMS.map(s => ({name:s, type:'vcr'})),
   ];
+
   setlist = new Array(TOTAL_SLOTS).fill(null);
   selectedName = null;
   buildPool();
@@ -329,12 +368,15 @@ function goToPage2() {
   setPage(2);
 }
 
+// ── POOL ──
 function buildPool() {
   const container = document.getElementById('songPool');
   container.innerHTML = '';
   const used = setlist.filter(Boolean).map(s => s.name);
   pool.forEach(item => {
-    if(!used.includes(item.name)) container.appendChild(makeChip(item));
+    if(!used.includes(item.name)) {
+      container.appendChild(makeChip(item));
+    }
   });
 }
 
@@ -361,11 +403,13 @@ function addCustomSong() {
 }
 document.getElementById('addSongInput').addEventListener('keydown', e => { if(e.key==='Enter') addCustomSong(); });
 
+// ── SLOTS ──
 function buildSlots() {
   const c = document.getElementById('slotsContainer');
   c.innerHTML = '';
   for(let i=0;i<TOTAL_SLOTS;i++) {
     if(i === MAIN_SLOTS) {
+      // divider
       const div = document.createElement('div');
       div.className='slot-divider';
       div.innerHTML='<div class="slot-divider-line"></div><div class="slot-divider-text">✦ ENCORE ✦</div><div class="slot-divider-line"></div>';
@@ -394,13 +438,16 @@ function makeSlotRow(i) {
 
 function drawSlot(box, i) {
   const slot = setlist[i];
+  // reset
   box.className='slot-box';
   box.innerHTML='';
+  // remove old listeners by cloning
   const fresh = box.cloneNode(false);
   box.parentNode && box.parentNode.replaceChild(fresh, box);
   box = fresh;
   box.id='slot'+i;
   box.dataset.index=i;
+
   if(slot) {
     box.classList.add('filled-slot','type-'+slot.type);
     const nameEl = document.createElement('span');
@@ -412,6 +459,7 @@ function drawSlot(box, i) {
     box.appendChild(nameEl); box.appendChild(rm);
     box.addEventListener('click', () => {
       if(selectedName) {
+        // swap
         const item = pool.find(p=>p.name===selectedName);
         if(item) { setlist[i]=item; selectedName=null; buildPool(); refreshAllSlots(); }
       }
@@ -463,15 +511,19 @@ function updateNextBtn() {
   btn.textContent = n>0 ? `결과 보기 (${n}개) →` : '결과 보기 →';
 }
 
+// ── RESULT ──
 function goToPage3() {
   buildResult();
   setPage(3);
+  // 페이지 전환 후 잠깐 기다렸다가 이미지로 렌더
   setTimeout(renderCardAsImage, 300);
 }
 
 function renderCardAsImage() {
   const card = document.getElementById('resultCard');
-  if(!card || card.querySelector('img.rendered-img')) return;
+  if(!card || card.querySelector('img.rendered-img')) return; // 이미 변환됨
+
+  // 폰트 로드 확인 후 캔버스화
   document.fonts.ready.then(() => {
     html2canvas(card, {
       backgroundColor: '#111111',
@@ -482,31 +534,42 @@ function renderCardAsImage() {
       height: card.offsetHeight,
     }).then(canvas => {
       const dataUrl = canvas.toDataURL('image/png');
+
+      // 원본 카드를 이미지로 교체
       const img = document.createElement('img');
       img.src = dataUrl;
       img.className = 'rendered-img';
       img.style.cssText = 'width:100%;border-radius:8px;display:block;-webkit-touch-callout:default;';
       img.alt = '세트리스트 이미지 (꾹 눌러서 저장)';
+
       card.style.display = 'none';
       card.parentNode.insertBefore(img, card);
+
+      // 안내 업데이트
       document.getElementById('saveHint').innerHTML =
         '👆 이미지를 <strong>꾹 눌러서</strong> 저장하세요! (사진 앱에 추가)';
-    }).catch(err => { console.error('캡처 실패:', err); });
+    }).catch(err => {
+      console.error('캡처 실패:', err);
+    });
   });
 }
 
 function buildResult() {
   const concertName = surveyAnswers['콘서트 이름'] || 'DINO 1st solo concert';
   document.getElementById('resultTitle').textContent = concertName;
+
   const now = new Date();
   document.getElementById('resultMeta').textContent =
     `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} — CUSTOM SETLIST`;
+
   const tracks = document.getElementById('resultTracks');
   tracks.innerHTML='';
+
   const mainFilled = setlist.slice(0, MAIN_SLOTS).filter(Boolean);
   mainFilled.forEach((slot, idx) => {
     tracks.appendChild(makeResultRow(String(idx+1).padStart(2,'0'), slot, false));
   });
+
   const encoreFilled = [setlist[15], setlist[16]].some(Boolean);
   if(encoreFilled) {
     const div = document.createElement('div');
@@ -516,6 +579,7 @@ function buildResult() {
     if(setlist[15]) tracks.appendChild(makeResultRow('앵콜1', setlist[15], true));
     if(setlist[16]) tracks.appendChild(makeResultRow('앵콜2', setlist[16], true));
   }
+
   const ans = document.getElementById('resultAnswers');
   const answerEntries = Object.entries(surveyAnswers).filter(([q,a]) => a && q !== '콘서트 이름');
   if(answerEntries.length > 0) {
@@ -542,11 +606,20 @@ function makeResultRow(label, slot, encore) {
   return row;
 }
 
+function shareToX() {
+  const concertName = surveyAnswers['콘서트 이름'] || 'DINO 1st solo concert';
+  const pageUrl = window.location.href;
+  const text = `💕 ${concertName}\n내가 짠 디노 솔로 콘서트 세트리스트 🎸\n\n#DINO #디노 #세트리스트\n${pageUrl}`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+}
+
 function restart() {
+  // 렌더된 이미지 제거하고 카드 다시 보이기
   const renderedImg = document.querySelector('img.rendered-img');
   if(renderedImg) renderedImg.remove();
   const card = document.getElementById('resultCard');
   if(card) card.style.display = '';
+
   surveyAnswers={}; pool=[]; setlist=new Array(TOTAL_SLOTS).fill(null); selectedName=null;
   ['q0','q1','q2','q3','q4','q5'].forEach(id=>document.getElementById(id).value='');
   setPage(1);
