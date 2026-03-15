@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DINO — MY SETLIST</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --card: #161616;
+    --accent: #0F52BA;
+    --accent2: #3a7fe0;
+    --text: #f0f0f0;
+    --muted: #555;
+    --border: #2a2a2a;
+    --chip-survey: #0d1f2d;
+    --chip-survey-border: #1e6a9e;
+    --chip-survey-text: #5bc4ff;
+    --chip-vcr: #1a0d2d;
+    --chip-vcr-border: #7b4fd4;
+    --chip-vcr-text: #c084fc;
+    --encore: #7ee8ff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Noto Sans KR',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none;z-index:999;opacity:0.4;
+  }
+  .page{display:none;min-height:100vh;}
+  .page.active{display:flex;flex-direction:column;}
+  .site-header{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(8px);z-index:100;}
+  .site-logo{font-family:'Bebas Neue',cursive;font-size:24px;letter-spacing:4px;color:var(--accent);}
+  .site-logo span{color:var(--text);}
+  .step-indicator{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .step-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:all .3s;}
+  .step-dot.active{background:var(--accent);transform:scale(1.4);}
+  .step-dot.done{background:var(--accent2);}
+  #page1{align-items:center;padding:52px 20px 80px;}
+  .survey-container{width:100%;max-width:640px;}
+  .survey-title{font-family:'Bebas Neue',cursive;font-size:clamp(44px,8vw,76px);line-height:.9;letter-spacing:2px;margin-bottom:8px;}
+  .survey-title .hl{color:var(--accent);}
+  .survey-subtitle{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:48px;}
+  .question-block{margin-bottom:34px;opacity:0;transform:translateY(20px);animation:fadeUp .5s forwards;}
+  .question-block:nth-child(1){animation-delay:.1s}
+  .question-block:nth-child(2){animation-delay:.2s}
+  .question-block:nth-child(3){animation-delay:.3s}
+  .question-block:nth-child(4){animation-delay:.4s}
+  .question-block:nth-child(5){animation-delay:.5s}
+  .question-block:nth-child(6){animation-delay:.6s}
+  .question-block:nth-child(7){animation-delay:.7s}
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+  .q-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:7px;}
+  .q-text{font-size:15px;font-weight:700;margin-bottom:10px;line-height:1.6;}
+  .q-hint{font-size:12px;color:var(--muted);margin-bottom:11px;}
+  .q-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:13px 16px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+  .q-input:focus{border-color:var(--accent);}
+  .q-input::placeholder{color:var(--muted);}
+  .btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;padding:15px 36px;font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:3px;cursor:pointer;border-radius:2px;transition:all .2s;margin-top:8px;}
+  .btn-primary:hover{background:#2563cc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,82,186,.4);}
+  #page2{flex-direction:column;padding-bottom:60px;}
+  .instruction-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 28px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;}
+  .instruction-bar .hi{color:var(--accent);}
+  .p2-inner{display:flex;flex:1;}
+  .panel{padding:24px 20px;overflow-y:auto;}
+  .panel-left{width:340px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;position:sticky;top:0;max-height:calc(100vh - 105px);overflow-y:auto;}
+  .panel-right{flex:1;background:var(--bg);}
+  .panel-title{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+  .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+  .legend-dot.song{background:#161616;border:1.5px solid #3a3a3a;}
+  .legend-dot.survey{background:var(--chip-survey);border:1.5px solid var(--chip-survey-border);}
+  .legend-dot.vcr{background:var(--chip-vcr);border:1.5px solid var(--chip-vcr-border);}
+  .song-pool{display:flex;flex-direction:column;gap:6px;}
+  .song-chip{border-radius:4px;padding:10px 13px;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;transition:all .15s;user-select:none;border:1.5px solid;}
+  .song-chip.type-song{background:#161616;border-color:#3a3a3a;color:#f0f0f0;}
+  .song-chip.type-survey{background:var(--chip-survey);border-color:var(--chip-survey-border);color:var(--chip-survey-text);}
+  .song-chip.type-vcr{background:var(--chip-vcr);border-color:var(--chip-vcr-border);color:var(--chip-vcr-text);}
+  .song-chip:hover{filter:brightness(1.35);transform:translateX(4px);}
+  .song-chip.selected{outline:2px solid var(--accent);outline-offset:2px;transform:translateX(6px);}
+  .chip-icon{font-size:12px;flex-shrink:0;}
+  .add-song-area{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+  .add-song-row{display:flex;gap:8px;}
+  .add-song-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:9px 12px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;}
+  .add-song-input:focus{border-color:var(--accent2);}
+  .btn-add{background:var(--accent2);color:#000;border:none;padding:9px 14px;font-family:'Bebas Neue',cursive;font-size:16px;cursor:pointer;border-radius:4px;}
+  .btn-add:hover{opacity:.85;}
+  .setlist-header{display:flex;align-items:baseline;gap:12px;margin-bottom:18px;padding:24px 24px 0;}
+  .setlist-main-title{font-family:'Bebas Neue',cursive;font-size:36px;letter-spacing:3px;}
+  .setlist-main-title span{color:var(--accent);}
+  .slots-container{padding:0 24px;display:flex;flex-direction:column;gap:8px;}
+  .slot-row{display:flex;align-items:center;gap:10px;}
+  .slot-number{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--muted);width:52px;text-align:right;flex-shrink:0;}
+  .slot-number.filled{color:var(--accent);}
+  .slot-number.encore{color:var(--muted);font-size:14px;width:52px;}
+  .slot-number.encore.filled{color:var(--encore);}
+  .slot-box{flex:1;min-height:46px;border:1.5px dashed var(--border);border-radius:4px;display:flex;align-items:center;padding:0 12px;transition:all .15s;cursor:pointer;position:relative;}
+  .slot-box:hover:not(.filled-slot){border-color:var(--accent);background:rgba(15,82,186,.05);}
+  .slot-box.ready-to-place{border-color:var(--accent);border-style:solid;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(15,82,186,.3);}50%{box-shadow:0 0 0 6px rgba(15,82,186,0);}}
+  .slot-box.filled-slot{border-style:solid;}
+  .slot-box.filled-slot.type-song{border-color:#3a3a3a;background:#161616;}
+  .slot-box.filled-slot.type-survey{border-color:var(--chip-survey-border);background:var(--chip-survey);}
+  .slot-box.filled-slot.type-vcr{border-color:var(--chip-vcr-border);background:var(--chip-vcr);}
+  .slot-placeholder{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;pointer-events:none;}
+  .slot-song{font-size:14px;font-weight:700;flex:1;}
+  .slot-song.type-survey{color:var(--chip-survey-text);}
+  .slot-song.type-vcr{color:var(--chip-vcr-text);}
+  .slot-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 6px;transition:color .2s;z-index:1;}
+  .slot-remove:hover{color:var(--accent);}
+  .btn-footer{padding:22px 24px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .btn-next{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;padding:13px 30px;font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:3px;cursor:pointer;border-radius:2px;transition:all .2s;}
+  .btn-next:hover:not(:disabled){background:#2563cc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,82,186,.4);}
+  .btn-next:disabled{background:var(--muted);cursor:not-allowed;}
+  .slot-divider{margin:14px 0 10px;display:flex;align-items:center;gap:10px;padding:0 24px;}
+  .slot-divider-line{flex:1;height:1px;background:var(--border);}
+  .slot-divider-text{font-family:'Space Mono',monospace;font-size:10px;color:var(--encore);letter-spacing:3px;white-space:nowrap;}
+  .result-num.encore{color:var(--encore);font-size:14px;}
+  .result-song-name.encore{color:var(--encore);}
+  .btn-clear{background:none;border:1px solid var(--border);color:var(--muted);padding:11px 18px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s;text-transform:uppercase;}
+  .btn-clear:hover{color:var(--text);border-color:var(--muted);}
+  #page3{align-items:center;justify-content:flex-start;padding:32px 20px 80px;}
+  .result-page-wrap{width:100%;max-width:520px;display:flex;flex-direction:column;gap:16px;}
+  .save-hint{background:rgba(126,232,255,0.08);border:1px solid rgba(126,232,255,0.25);border-radius:8px;padding:14px 18px;font-family:'Space Mono',monospace;font-size:11px;color:#7ee8ff;letter-spacing:1px;text-align:center;line-height:1.8;}
+  .result-card{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .result-card-header{background:var(--accent);padding:14px 40px;position:relative;overflow:hidden;}
+  .result-card-header::after{content:'DINO';position:absolute;right:-10px;bottom:-20px;font-family:'Bebas Neue',cursive;font-size:100px;color:rgba(0,0,0,.15);letter-spacing:-4px;}
+  .result-artist{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;color:rgba(255,255,255,.7);margin-bottom:2px;}
+  .result-title{font-family:'Noto Sans KR',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;color:#fff;line-height:1.3;margin-top:2px;}
+  .result-meta{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.6);margin-top:5px;letter-spacing:2px;}
+  .result-tracks{padding:14px 40px;}
+  .result-track{display:flex;align-items:center;gap:14px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .result-track:last-child{border-bottom:none;}
+  .result-num{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--accent);width:26px;flex-shrink:0;}
+  .result-song-name{font-size:14px;font-weight:700;flex:1;}
+  .result-badge{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;padding:2px 6px;border-radius:2px;flex-shrink:0;}
+  .result-badge.survey{color:var(--chip-survey-text);border:1px solid var(--chip-survey-border);}
+  .result-badge.vcr{color:var(--chip-vcr-text);border:1px solid var(--chip-vcr-border);}
+  .result-answers{padding:16px 28px;background:var(--card);border-top:1px solid var(--border);}
+  .result-answers-title{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+  .answer-item{margin-bottom:10px;}
+  .answer-q{font-size:11px;color:var(--muted);margin-bottom:2px;}
+  .answer-a{font-size:13px;font-weight:700;}
+  .result-actions{display:flex;flex-direction:column;gap:12px;}
+  .btn-restart{flex:1;min-width:120px;padding:12px 14px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:4px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;cursor:pointer;transition:color .2s;text-transform:uppercase;text-align:center;}
+  .btn-restart:hover{color:var(--text);border-color:var(--muted);}
+  .screenshot-flash{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:9999;transition:opacity .1s;}
+  .screenshot-flash.flash{opacity:.8;}
+  @media(max-width:680px){
+    .p2-inner{flex-direction:column;}
+    .panel-left{width:100%;min-width:unset;max-height:none;border-right:none;border-bottom:1px solid var(--border);position:static;}
+  }
+</style>
+</head>
+<body>
+<div class="screenshot-flash" id="flash"></div>
+
+<header class="site-header">
+  <div class="site-logo">DINO <span>SETLIST</span></div>
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+</header>
+
+<!-- PAGE 1 -->
+<div class="page active" id="page1">
+  <div class="survey-container">
+    <div class="survey-title">💕두근두근<br>디노 콘서트<br><span class="hl">커스텀</span>💕</div>
+    <div class="survey-subtitle">// DINO CONCERT BUILDER</div>
+    <div class="question-block">
+      <div class="q-label">Q.01 — CONCERT NAME</div>
+      <div class="q-text">디노의 첫 번째 솔로 콘서트 이름을 짓는다면?</div>
+      <div class="q-hint">결과 페이지의 제목으로 사용돼요 ✨</div>
+      <input class="q-input" id="q0" type="text" placeholder="ex) DINO : HELLO WORLD, CHAN's NIGHT…">
+    </div>
+    <div class="question-block">
+      <div class="q-label">Q.02</div>
+      <div class="q-text">두근두근, 디노의 솔로 앨범! 타이틀곡은 어떤 분위기면 좋겠어?</div>
+      <div class="q-hint">ex) 강렬한 힙합, 얼터너티브 록, 몽환적인 R&B…</div>
+      <input class="q-input" id="q1" type="text" placeholder="원하는 분위기를 자유롭게 적어줘">
+    </div>
+    <div class="question-block">
+      <div class="q-label">Q.03</div>
+      <div class="q-text">디노 솔로 앨범의 수록곡 1은 어떤 노래면 좋겠어?</div>
+      <input class="q-input" id="q2" type="text" placeholder="장르, 분위기, 느낌 등 자유롭게">
+    </div>
+    <div class="question-block">
+      <div class="q-label">Q.04</div>
+      <div class="q-text">디노 솔로 앨범의 수록곡 2는 어떤 노래면 좋겠어?</div>
+      <input class="q-input" id="q3" type="text" placeholder="장르, 분위기, 느낌 등 자유롭게">
+    </div>
+    <div class="question-block">
+      <div class="q-label">Q.05</div>
+      <div class="q-text">디노가 꼭 혼자 불러봤으면 하는 세븐틴 단체곡이 있다면?</div>
+      <input class="q-input" id="q4" type="text" placeholder="노래 제목을 입력해줘">
+    </div>
+    <div class="question-block">
+      <div class="q-label">Q.06</div>
+      <div class="q-text">디노 솔로 콘서트에서 꼭 했으면 하는 특별 이벤트가 있다면?</div>
+      <input class="q-input" id="q5" type="text" placeholder="ex) 팬과 함께 춤추기, 깜짝 게스트…">
+    </div>
+    <button class="btn-primary" onclick="goToPage2()">세트리스트 짜러 가기 →</button>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page2">
+  <div class="instruction-bar">
+    왼쪽 항목을 <span class="hi">클릭해서 선택</span>한 뒤, 오른쪽 빈 슬롯을 <span class="hi">클릭해서 배치</span>하세요 &nbsp;|&nbsp; 채워진 슬롯의 <span class="hi">×</span>를 누르면 제거됩니다
+  </div>
+  <div class="p2-inner">
+    <div class="panel panel-left">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot song"></div>기존 수록곡</div>
+        <div class="legend-item"><div class="legend-dot survey"></div>내 답변</div>
+        <div class="legend-item"><div class="legend-dot vcr"></div>VCR</div>
+      </div>
+      <div class="panel-title">// 항목 목록</div>
+      <div class="song-pool" id="songPool"></div>
+      <div class="add-song-area">
+        <div class="panel-title">// 직접 추가</div>
+        <div class="add-song-row">
+          <input class="add-song-input" id="addSongInput" type="text" placeholder="곡/항목 입력">
+          <button class="btn-add" onclick="addCustomSong()">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-right">
+      <div class="setlist-header">
+        <div class="setlist-main-title">💕 두근두근 <span>세트리스트</span></div>
+      </div>
+      <div class="slots-container" id="slotsContainer"></div>
+      <div class="btn-footer">
+        <button class="btn-next" id="btnNext" onclick="goToPage3()" disabled>결과 보기 →</button>
+        <button class="btn-clear" onclick="clearAll()">전체 초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="page3">
+  <div class="result-page-wrap">
+    <div class="save-hint" id="saveHint">
+      📱 이미지를 <strong>꾹 눌러서</strong> 저장하거나 스크린샷을 찍어주세요!
+    </div>
+    <div class="result-card" id="resultCard">
+      <div class="result-card-header">
+        <div class="result-artist">DINO — MY CONCERT SETLIST</div>
+        <div class="result-title" id="resultTitle">DINO 1st solo concert</div>
+        <div class="result-meta" id="resultMeta"></div>
+      </div>
+      <div class="result-tracks" id="resultTracks"></div>
+    </div>
+    <div class="result-actions" id="resultActions">
+      <div class="result-answers" id="resultAnswers"></div>
+      <button class="btn-restart" onclick="restart()">↺ 처음부터 다시</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const FIXED_SONGS = [
+  'zero(0)','the real thing','E/T','last order',
+  'zero(hero)','high-five','이카루스','WAIT','trigger','til my fingers bleed'
+];
+const VCR_ITEMS = ['VCR1','VCR2'];
+const MAIN_SLOTS = 15;
+const TOTAL_SLOTS = 17;
+
+function slotLabel(i) {
+  if(i < MAIN_SLOTS) return String(i+1).padStart(2,'0');
+  return i===15 ? '앵콜1' : '앵콜2';
+}
+function isEncore(i){ return i >= MAIN_SLOTS; }
+
+let pool = [];
+let setlist = new Array(TOTAL_SLOTS).fill(null);
+let selectedName = null;
+let surveyAnswers = {};
+
+function setPage(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page'+n).classList.add('active');
+  ['dot1','dot2','dot3'].forEach((id,i) => {
+    const d = document.getElementById(id);
+    d.classList.remove('active','done');
+    if(i+1 < n) d.classList.add('done');
+    else if(i+1 === n) d.classList.add('active');
+  });
+  window.scrollTo(0,0);
+}
+
+function goToPage2() {
+  const concertName = document.getElementById('q0').value.trim();
+  surveyAnswers = {
+    '콘서트 이름': concertName,
+    '타이틀곡 분위기': document.getElementById('q1').value.trim(),
+    '수록곡 1': document.getElementById('q2').value.trim(),
+    '수록곡 2': document.getElementById('q3').value.trim(),
+    '함께 부르고 싶은 단체곡': document.getElementById('q4').value.trim(),
+    '콘서트 이벤트': document.getElementById('q5').value.trim(),
+  };
+  const surveyKeys = ['타이틀곡 분위기','수록곡 1','수록곡 2','함께 부르고 싶은 단체곡'];
+  const surveyVals = surveyKeys.map(k => surveyAnswers[k]).filter(Boolean);
+  pool = [
+    ...FIXED_SONGS.map(s => ({name:s, type:'song'})),
+    ...surveyVals.map(s => ({name:s, type:'survey'})),
+    ...VCR_ITEMS.map(s => ({name:s, type:'vcr'})),
+  ];
+  setlist = new Array(TOTAL_SLOTS).fill(null);
+  selectedName = null;
+  buildPool();
+  buildSlots();
+  setPage(2);
+}
+
+function buildPool() {
+  const container = document.getElementById('songPool');
+  container.innerHTML = '';
+  const used = setlist.filter(Boolean).map(s => s.name);
+  pool.forEach(item => {
+    if(!used.includes(item.name)) container.appendChild(makeChip(item));
+  });
+}
+
+function makeChip(item) {
+  const chip = document.createElement('div');
+  chip.className = `song-chip type-${item.type}${selectedName===item.name?' selected':''}`;
+  const icon = item.type==='survey'?'💬':item.type==='vcr'?'📽':'🎵';
+  chip.innerHTML = `<span class="chip-icon">${icon}</span>${item.name}`;
+  chip.addEventListener('click', () => {
+    selectedName = selectedName===item.name ? null : item.name;
+    buildPool();
+    refreshAllSlots();
+  });
+  return chip;
+}
+
+function addCustomSong() {
+  const input = document.getElementById('addSongInput');
+  const name = input.value.trim();
+  if(!name || pool.some(p=>p.name.toLowerCase()===name.toLowerCase())) { input.value=''; return; }
+  pool.push({name, type:'song'});
+  buildPool();
+  input.value='';
+}
+document.getElementById('addSongInput').addEventListener('keydown', e => { if(e.key==='Enter') addCustomSong(); });
+
+function buildSlots() {
+  const c = document.getElementById('slotsContainer');
+  c.innerHTML = '';
+  for(let i=0;i<TOTAL_SLOTS;i++) {
+    if(i === MAIN_SLOTS) {
+      const div = document.createElement('div');
+      div.className='slot-divider';
+      div.innerHTML='<div class="slot-divider-line"></div><div class="slot-divider-text">✦ ENCORE ✦</div><div class="slot-divider-line"></div>';
+      c.appendChild(div);
+    }
+    c.appendChild(makeSlotRow(i));
+  }
+  updateNextBtn();
+}
+
+function makeSlotRow(i) {
+  const row = document.createElement('div');
+  row.className = 'slot-row';
+  const num = document.createElement('div');
+  num.id='num'+i;
+  const enc = isEncore(i);
+  num.className='slot-number'+(enc?' encore':'')+(setlist[i]?' filled':'');
+  num.textContent=slotLabel(i);
+  const box = document.createElement('div');
+  box.id='slot'+i;
+  box.dataset.index=i;
+  drawSlot(box, i);
+  row.appendChild(num); row.appendChild(box);
+  return row;
+}
+
+function drawSlot(box, i) {
+  const slot = setlist[i];
+  box.className='slot-box';
+  box.innerHTML='';
+  const fresh = box.cloneNode(false);
+  box.parentNode && box.parentNode.replaceChild(fresh, box);
+  box = fresh;
+  box.id='slot'+i;
+  box.dataset.index=i;
+  if(slot) {
+    box.classList.add('filled-slot','type-'+slot.type);
+    const nameEl = document.createElement('span');
+    nameEl.className='slot-song type-'+slot.type;
+    nameEl.textContent=slot.name;
+    const rm = document.createElement('button');
+    rm.className='slot-remove'; rm.title='제거'; rm.textContent='×';
+    rm.addEventListener('click', e => { e.stopPropagation(); removeFromSlot(i); });
+    box.appendChild(nameEl); box.appendChild(rm);
+    box.addEventListener('click', () => {
+      if(selectedName) {
+        const item = pool.find(p=>p.name===selectedName);
+        if(item) { setlist[i]=item; selectedName=null; buildPool(); refreshAllSlots(); }
+      }
+    });
+  } else {
+    if(selectedName) box.classList.add('ready-to-place');
+    const ph = document.createElement('span');
+    ph.className='slot-placeholder';
+    ph.textContent=selectedName?'← 클릭해서 배치':'CLICK TO PLACE';
+    box.appendChild(ph);
+    box.addEventListener('click', () => {
+      if(!selectedName) return;
+      const item = pool.find(p=>p.name===selectedName);
+      if(!item) return;
+      setlist[i]=item; selectedName=null;
+      buildPool(); refreshAllSlots(); updateNextBtn();
+    });
+  }
+  return box;
+}
+
+function refreshAllSlots() {
+  for(let i=0;i<TOTAL_SLOTS;i++) {
+    const box = document.getElementById('slot'+i);
+    const num = document.getElementById('num'+i);
+    if(box) drawSlot(box, i);
+    if(num) {
+      const enc = isEncore(i);
+      num.className='slot-number'+(enc?' encore':'')+(setlist[i]?' filled':'');
+    }
+  }
+  updateNextBtn();
+}
+
+function removeFromSlot(i) {
+  setlist[i]=null; selectedName=null;
+  buildPool(); refreshAllSlots();
+}
+
+function clearAll() {
+  setlist=new Array(TOTAL_SLOTS).fill(null); selectedName=null;
+  buildPool(); refreshAllSlots();
+}
+
+function updateNextBtn() {
+  const n = setlist.filter(Boolean).length;
+  const btn = document.getElementById('btnNext');
+  btn.disabled = n===0;
+  btn.textContent = n>0 ? `결과 보기 (${n}개) →` : '결과 보기 →';
+}
+
+function goToPage3() {
+  buildResult();
+  setPage(3);
+  setTimeout(renderCardAsImage, 300);
+}
+
+function renderCardAsImage() {
+  const card = document.getElementById('resultCard');
+  if(!card || card.querySelector('img.rendered-img')) return;
+  document.fonts.ready.then(() => {
+    html2canvas(card, {
+      backgroundColor: '#111111',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      width: card.offsetWidth,
+      height: card.offsetHeight,
+    }).then(canvas => {
+      const dataUrl = canvas.toDataURL('image/png');
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.className = 'rendered-img';
+      img.style.cssText = 'width:100%;border-radius:8px;display:block;-webkit-touch-callout:default;';
+      img.alt = '세트리스트 이미지 (꾹 눌러서 저장)';
+      card.style.display = 'none';
+      card.parentNode.insertBefore(img, card);
+      document.getElementById('saveHint').innerHTML =
+        '👆 이미지를 <strong>꾹 눌러서</strong> 저장하세요! (사진 앱에 추가)';
+    }).catch(err => { console.error('캡처 실패:', err); });
+  });
+}
+
+function buildResult() {
+  const concertName = surveyAnswers['콘서트 이름'] || 'DINO 1st solo concert';
+  document.getElementById('resultTitle').textContent = concertName;
+  const now = new Date();
+  document.getElementById('resultMeta').textContent =
+    `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} — CUSTOM SETLIST`;
+  const tracks = document.getElementById('resultTracks');
+  tracks.innerHTML='';
+  const mainFilled = setlist.slice(0, MAIN_SLOTS).filter(Boolean);
+  mainFilled.forEach((slot, idx) => {
+    tracks.appendChild(makeResultRow(String(idx+1).padStart(2,'0'), slot, false));
+  });
+  const encoreFilled = [setlist[15], setlist[16]].some(Boolean);
+  if(encoreFilled) {
+    const div = document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 0 4px;';
+    div.innerHTML='<div style="flex:1;height:1px;background:#2a2a2a"></div><div style="font-family:Space Mono,monospace;font-size:9px;color:#7ee8ff;letter-spacing:3px;white-space:nowrap">✦ ENCORE ✦</div><div style="flex:1;height:1px;background:#2a2a2a"></div>';
+    tracks.appendChild(div);
+    if(setlist[15]) tracks.appendChild(makeResultRow('앵콜1', setlist[15], true));
+    if(setlist[16]) tracks.appendChild(makeResultRow('앵콜2', setlist[16], true));
+  }
+  const ans = document.getElementById('resultAnswers');
+  const answerEntries = Object.entries(surveyAnswers).filter(([q,a]) => a && q !== '콘서트 이름');
+  if(answerEntries.length > 0) {
+    ans.style.display = '';
+    ans.innerHTML='<div class="result-answers-title">// MY ANSWERS</div>';
+    answerEntries.forEach(([q,a]) => {
+      const el = document.createElement('div'); el.className='answer-item';
+      el.innerHTML=`<div class="answer-q">${q}</div><div class="answer-a">${a}</div>`;
+      ans.appendChild(el);
+    });
+  } else {
+    ans.style.display = 'none';
+  }
+}
+
+function makeResultRow(label, slot, encore) {
+  const row = document.createElement('div');
+  row.className='result-track';
+  const badge = slot.type==='survey'?'<div class="result-badge survey">MY PICK</div>':
+                slot.type==='vcr'?'<div class="result-badge vcr">VCR</div>':'';
+  const numClass = encore ? 'result-num encore' : 'result-num';
+  const nameClass = encore ? 'result-song-name encore' : 'result-song-name';
+  row.innerHTML=`<div class="${numClass}">${label}</div><div class="${nameClass}">${slot.name}</div>${badge}`;
+  return row;
+}
+
+function restart() {
+  const renderedImg = document.querySelector('img.rendered-img');
+  if(renderedImg) renderedImg.remove();
+  const card = document.getElementById('resultCard');
+  if(card) card.style.display = '';
+  surveyAnswers={}; pool=[]; setlist=new Array(TOTAL_SLOTS).fill(null); selectedName=null;
+  ['q0','q1','q2','q3','q4','q5'].forEach(id=>document.getElementById(id).value='');
+  setPage(1);
+}
+</script>
+</body>
+</html>
