@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서버시간 측정기 — 신청 버튼 도달 시각</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">SERVER<span>TIME</span></div>
+  <div class="tagline">신청 버튼을 눌렀을 때 서버에 도달하는 시각을 측정합니다</div>
+</header>
+
+<main>
+
+  <!-- 1. 대상 -->
+  <section class="card">
+    <h2>1 · 측정 대상</h2>
+    <form id="target-form" class="row">
+      <input id="url-input" type="text" placeholder="https://example.com/apply" autocomplete="off" spellcheck="false">
+      <button type="submit" class="primary">동기화 시작</button>
+      <button type="button" id="resync-btn" class="ghost" title="초 경계를 다시 잡습니다">재동기화</button>
+    </form>
+    <p class="hint">
+      신청 페이지의 주소를 그대로 넣으면 됩니다. 응답의 <code>Date</code> 헤더만 읽으므로 로그인·제출은 일어나지 않습니다.
+    </p>
+    <div id="status-chips" class="chips"></div>
+    <div id="warnings" class="warnings"></div>
+  </section>
+
+  <!-- 2. 서버 시계 -->
+  <section class="card clock-card">
+    <h2>2 · 서버 시각</h2>
+    <div id="clock" class="clock">--:--:--<span class="ms">.---</span></div>
+    <div id="clock-sub" class="clock-sub">대상을 입력하면 동기화를 시작합니다</div>
+    <div class="stat-grid">
+      <div class="stat"><span class="stat-label">추정 오차</span><span id="stat-unc" class="stat-value">—</span></div>
+      <div class="stat"><span class="stat-label">내 PC 시계 오차</span><span id="stat-drift" class="stat-value">—</span></div>
+      <div class="stat"><span class="stat-label">왕복 지연(최소/중앙)</span><span id="stat-rtt" class="stat-value">—</span></div>
+      <div class="stat"><span class="stat-label">편도 지연(추정)</span><span id="stat-oneway" class="stat-value">—</span></div>
+    </div>
+  </section>
+
+  <!-- 3. 클릭 도달 측정 -->
+  <section class="card">
+    <h2>3 · 클릭 도달 시각 측정</h2>
+    <p class="hint">
+      아래 버튼을 누르면 <b>그 순간의 서버 시각</b>과, 그 클릭 신호가 <b>서버에 도달하는 시각</b>을 계산합니다.
+      동시에 실제 요청을 한 번 보내 응답 <code>Date</code>로 검증합니다. (스페이스바로도 가능)
+    </p>
+    <button id="click-btn" class="big-button" disabled>신청 버튼 클릭 테스트</button>
+    <div id="click-result" class="click-result"></div>
+    <table id="history" class="history hidden">
+      <thead>
+        <tr><th>#</th><th>클릭(서버시각)</th><th>서버 도달 예상</th><th>편도</th><th>실측 응답 Date</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 4. 카운트다운 -->
+  <section class="card">
+    <h2>4 · 목표 시각 카운트다운</h2>
+    <p class="hint">
+      신청 시작 시각을 넣으면, 신호가 정각에 서버에 닿도록 <b>먼저 눌러야 할 시각</b>을 계산해 카운트다운합니다.
+    </p>
+    <div class="row wrap">
+      <label>목표 서버 시각
+        <input id="target-time" type="text" value="14:00:00.000" placeholder="HH:MM:SS.mmm">
+      </label>
+      <label>추가 여유(ms)
+        <input id="lead-extra" type="number" value="0" step="10">
+      </label>
+      <label class="check"><input id="sound-toggle" type="checkbox" checked> 소리 신호</label>
+      <button id="countdown-btn" class="primary" type="button">카운트다운 시작</button>
+      <button id="countdown-stop" class="ghost hidden" type="button">중지</button>
+    </div>
+    <div id="countdown" class="countdown hidden">
+      <div id="cd-value" class="cd-value">--</div>
+      <div id="cd-label" class="cd-label"></div>
+      <div id="cd-detail" class="cd-detail"></div>
+    </div>
+  </section>
+
+  <section class="card notes">
+    <h2>읽고 쓰기</h2>
+    <ul>
+      <li><b>서버 시각</b>은 <code>Date</code> 헤더(초 단위)를 수십 번의 요청으로 구간 교차시켜 밀리초까지 좁힌 값입니다. 표시된 ± 가 오차 한계입니다.</li>
+      <li><b>편도 지연</b>은 최소 왕복시간의 절반입니다. 목표 시각 <i>편도 지연만큼 전</i>에 눌러야 신호가 정각에 도착합니다.</li>
+      <li>사이트가 CDN·로드밸런서 뒤에 있으면 <code>Date</code>는 그 앞단 장비의 시각입니다. 보통 NTP로 맞춰져 있지만, 실제 접수 서버와 몇 ms 차이가 날 수 있습니다.</li>
+      <li>브라우저에서 실제 버튼을 누를 때는 클릭 처리·JS 실행·TLS 재개 등으로 여기서 잰 값보다 몇 ms가 더 붙습니다. 여유 값으로 보정하세요.</li>
+    </ul>
+  </section>
+
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

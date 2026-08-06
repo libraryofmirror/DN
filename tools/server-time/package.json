@@ -1,0 +1,13 @@
+{
+  "name": "server-time",
+  "version": "1.0.0",
+  "private": true,
+  "description": "신청 버튼 클릭 신호가 서버에 도달하는 시각을 밀리초 단위로 측정하는 도구",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.mjs",
+    "cli": "node cli.mjs",
+    "test": "node test/clock.test.mjs"
+  }
+}
