@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서버시간 측정기 — 내 클릭이 서버에 도달하는 시각</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230F52BA'/%3E%3Cpath d='M16 8v9l6 3' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0a0a0a; --surface:#111; --card:#161616; --accent:#0F52BA; --accent2:#3a7fe0;
+    --text:#f0f0f0; --muted:#6b6b6b; --border:#262626; --good:#3ddc84; --warn:#ffb020; --bad:#ff5c5c;
+    --mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;
+       min-height:100vh;padding:28px 18px 80px;line-height:1.6}
+  .wrap{max-width:940px;margin:0 auto}
+  h1{font-size:20px;letter-spacing:-.3px;margin-bottom:4px}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:22px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:16px}
+  .card h2{font-size:13px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;color:var(--accent2)}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  input[type=text],input[type=date],select{width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:4px;
+       padding:11px 13px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none}
+  input:focus{border-color:var(--accent)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1 1 200px}
+  button{background:var(--accent);color:#fff;border:none;border-radius:4px;padding:12px 20px;font-size:14px;
+       font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+  button:hover{background:#2563cc}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  button.ghost:hover{background:#1c1c1c}
+  button:disabled{opacity:.4;cursor:not-allowed}
+
+  /* 큰 시계 */
+  .clockbox{background:linear-gradient(160deg,#101820,#0b0b0b);border:1px solid #1d2a3a;border-radius:10px;
+       padding:26px 20px 20px;text-align:center;position:relative;overflow:hidden;margin-bottom:16px}
+  .clocklabel{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+  .clock{font-family:var(--mono);font-weight:700;font-size:clamp(38px,10vw,72px);letter-spacing:-1px;line-height:1.1;
+       margin:6px 0 2px;font-variant-numeric:tabular-nums}
+  .clock .ms{color:var(--accent2);font-size:.55em}
+  .clock.stale{color:#3a3a3a}
+  .accuracy{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .accuracy b{color:var(--good)}
+  .secbar{height:3px;background:#1a1a1a;border-radius:2px;margin-top:14px;overflow:hidden}
+  .secbar>i{display:block;height:100%;background:var(--accent);width:0}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--border);
+       border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .stat{background:var(--card);padding:12px 14px}
+  .stat .k{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:var(--mono)}
+  .stat .v{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+
+  .bigbtn{width:100%;padding:26px;font-size:20px;letter-spacing:2px;border-radius:8px;
+       background:linear-gradient(135deg,var(--accent),#1e40af);box-shadow:0 6px 22px rgba(15,82,186,.25)}
+  .bigbtn:active{transform:scale(.99)}
+
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin-top:12px}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+  th{color:var(--muted);font-weight:400;font-size:10px;letter-spacing:1px;text-transform:uppercase}
+  td:first-child,th:first-child{text-align:left}
+  .tablewrap{overflow-x:auto}
+  td.hit{color:var(--good);font-weight:700}
+
+  .countdown{font-family:var(--mono);font-size:clamp(28px,7vw,52px);font-weight:700;text-align:center;
+       font-variant-numeric:tabular-nums;margin:8px 0}
+  .cue{text-align:center;font-family:var(--mono);letter-spacing:4px;font-size:13px;color:var(--muted);min-height:22px}
+  .cue.go{color:#fff;background:var(--good);color:#052; border-radius:4px;padding:6px 0;font-weight:700}
+  .cue.soon{color:var(--warn)}
+
+  .msg{font-size:12px;padding:9px 12px;border-radius:4px;margin-top:10px;display:none;font-family:var(--mono)}
+  .msg.show{display:block}
+  .msg.err{background:#2a1010;color:#ff9a9a;border:1px solid #532}
+  .msg.warn{background:#2a2210;color:#ffd28a;border:1px solid #553}
+  .msg.ok{background:#0f2419;color:#8fe6b6;border:1px solid #254}
+
+  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+  .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:#bbb;margin-top:10px;cursor:pointer}
+  .chk input{width:16px;height:16px;accent-color:var(--accent)}
+  details{margin-top:8px}
+  summary{cursor:pointer;font-size:12px;color:var(--muted)}
+  details p,details li{font-size:12px;color:#999;margin-top:8px}
+  details ul{padding-left:18px}
+  code{font-family:var(--mono);background:#0d0d0d;padding:1px 5px;border-radius:3px;font-size:11px;color:#9cc}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>서버시간 측정기</h1>
+  <div class="sub">click → server arrival time</div>
+
+  <!-- 1. 대상 -->
+  <div class="card">
+    <h2>1. 측정할 사이트</h2>
+    <div class="row">
+      <input type="text" id="url" placeholder="https://ticket.example.com/apply" spellcheck="false">
+      <div style="flex:0 0 auto;display:flex;gap:8px">
+        <button id="btnSync">동기화 시작</button>
+        <button id="btnStop" class="ghost" disabled>정지</button>
+      </div>
+    </div>
+    <div class="hint">신청 버튼이 있는 페이지 주소를 그대로 넣으세요. HEAD 요청만 보내며 아무것도 신청되지 않습니다.</div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- 2. 시계 -->
+  <div class="clockbox">
+    <div class="clocklabel">대상 서버의 현재 시각</div>
+    <div class="clock stale" id="clock">--:--:--<span class="ms">.---</span></div>
+    <div class="accuracy" id="acc">동기화 대기 중</div>
+    <div class="secbar"><i id="secbar"></i></div>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">내 시계와 차이</div><div class="v" id="sOffset">–</div></div>
+    <div class="stat"><div class="k">왕복 지연 (최소)</div><div class="v" id="sRtt">–</div></div>
+    <div class="stat"><div class="k">상행 지연 추정</div><div class="v" id="sUp">–</div></div>
+    <div class="stat"><div class="k">유효 샘플</div><div class="v" id="sN">–</div></div>
+  </div>
+
+  <!-- 3. 클릭 측정 -->
+  <div class="card" style="margin-top:16px">
+    <h2>2. 클릭 → 서버 도달 시각 측정</h2>
+    <button class="bigbtn" id="btnClick" disabled>신청 클릭</button>
+    <label class="chk"><input type="checkbox" id="realSend"> 클릭할 때 실제로 요청을 보내 도달 시각을 직접 측정 (권장)</label>
+    <div class="hint">누른 순간과, 그 신호가 서버에 닿은 시각을 서버 시계 기준으로 기록합니다.</div>
+    <div class="tablewrap">
+      <table id="log">
+        <thead><tr>
+          <th>#</th><th>누른 순간(서버시계)</th><th>서버 도달(추정)</th>
+          <th>입력 지연</th><th>상행 지연</th><th>오차</th><th>목표 대비</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. 목표 시각 -->
+  <div class="card">
+    <h2>3. 목표 시각 연습 / 카운트다운</h2>
+    <div class="row">
+      <div><label>날짜</label><input type="date" id="tDate"></div>
+      <div><label>목표 시각 (서버시계, HH:MM:SS.mmm)</label><input type="text" id="tTime" value="20:00:00.000" spellcheck="false"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="beep"> 카운트다운 소리</label>
+    <div class="countdown" id="cd">--:--.---</div>
+    <div class="cue" id="cue"></div>
+    <div class="hint" id="advice">상행 지연만큼 미리 눌러야 신호가 정각에 도착합니다.</div>
+  </div>
+
+  <div class="card">
+    <h2>측정 원리와 한계</h2>
+    <details open>
+      <summary>어떻게 계산하나</summary>
+      <ul>
+        <li>대상 서버에 <code>HEAD</code> 요청을 보내고 <b>보낸 시각(t0)</b>, <b>헤더를 받은 시각(t1)</b>, 응답의 <code>Date</code> 헤더를 기록합니다.</li>
+        <li>서버가 <code>Date</code>를 만든 순간은 반드시 t0~t1 사이이고, <code>Date</code>는 초 단위로 잘려 있으므로
+            시계 차이는 <code>(Date − t1, Date + 1000 − t0)</code> 구간 안에 있습니다.</li>
+        <li>이 구간을 수십 번 교집합하면 폭이 왕복 지연 수준(보통 10~40ms)까지 줄어듭니다. 표시된 ± 값이 그 폭입니다.</li>
+        <li>클릭 신호가 서버에 닿는 시각 = <code>클릭 시각 + 시계 차이 + 상행 지연(왕복/2)</code>.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>알아두어야 할 것</summary>
+      <ul>
+        <li>CDN·프록시가 캐시된 응답(<code>Age &gt; 0</code>)을 주면 그 샘플은 자동으로 버립니다.</li>
+        <li>웹 서버의 <code>Date</code>는 웹 서버 시계입니다. 접수 처리를 하는 뒤쪽 서버(DB·큐)의 시계와 다를 수 있습니다.</li>
+        <li>상행 지연은 왕복의 절반으로 가정한 값입니다. 업로드/다운로드 경로가 비대칭이면 오차가 생깁니다.</li>
+        <li>대기열(큐)을 쓰는 사이트는 도착 순서가 아니라 큐 진입 순서로 처리되기도 합니다.</li>
+        <li>측정은 초당 10회로 제한됩니다. 대상 사이트에 부담을 주지 마세요.</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- 상태 ---------- */
+const S = {
+  url: "",
+  running: false,
+  samples: [],          // {L,U,rttMs,connectMs,at}
+  est: null,            // {lo,hi,mid,err,n,total}
+  netRtt: null,         // 순수 네트워크 왕복(ms)
+  rttMedian: null,
+  inputLags: [],
+  clicks: [],
+  converged: false,
+  lastError: null,
+};
+
+const SAMPLE_WINDOW_MS = 180000;   // 시계 드리프트 때문에 오래된 샘플은 버린다
+const MAX_SAMPLES = 80;
+
+/* 이 방식으로 좁힐 수 있는 한계는 대략 왕복 지연 수준이다.
+   그보다 더 좁히려고 계속 요청을 보내 봐야 의미가 없으므로 회선 속도에 맞춰 기준을 잡는다. */
+function goodEnoughMs(){ return Math.max(5, (S.netRtt == null ? 30 : S.netRtt) * 0.75); }
+
+const $ = id => document.getElementById(id);
+
+/* ---------- 유틸 ---------- */
+const p2 = n => String(n).padStart(2, "0");
+const p3 = n => String(n).padStart(3, "0");
+
+function fmtClock(ms){
+  const d = new Date(ms);
+  return { hms: `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`, ms: p3(d.getMilliseconds()) };
+}
+function fmtFull(ms){ const f = fmtClock(ms); return `${f.hms}.${f.ms}`; }
+function fmtMs(v, digits = 0){ return v == null || !isFinite(v) ? "–" : `${v >= 0 ? "" : "-"}${Math.abs(v).toFixed(digits)}ms`; }
+function median(arr){
+  if(!arr.length) return null;
+  const a = [...arr].sort((x,y)=>x-y);
+  const m = a.length >> 1;
+  return a.length % 2 ? a[m] : (a[m-1] + a[m]) / 2;
+}
+function showMsg(text, kind){
+  const el = $("msg");
+  el.textContent = text;
+  el.className = "msg show " + (kind || "");
+  if(!text) el.className = "msg";
+}
+
+/* ---------- 시계 차이 추정 ----------
+   샘플마다 offset(= 서버시계 − 내시계) 이 들어 있는 구간 [L, U] 를 만든다.
+   여러 구간이 가장 많이 겹치는 지점을 찾아 그 구간들만 교집합한다.
+   (캐시된 응답이나 순간적으로 튄 샘플이 섞여도 전체가 망가지지 않는다) */
+function intersect(samples){
+  if(!samples.length) return null;
+  const events = [];
+  for(const s of samples){ events.push([s.L, 1], [s.U, -1]); }
+  events.sort((a,b) => a[0] - b[0] || b[1] - a[1]);
+  let cur = 0, best = 0, bestX = events[0][0];
+  for(const [x, d] of events){
+    cur += d;
+    if(cur > best){ best = cur; bestX = x; }
+  }
+  const covering = samples.filter(s => s.L <= bestX && bestX <= s.U);
+  let lo = -Infinity, hi = Infinity;
+  for(const s of covering){ if(s.L > lo) lo = s.L; if(s.U < hi) hi = s.U; }
+  return { lo, hi, mid: (lo + hi) / 2, err: (hi - lo) / 2, n: covering.length, total: samples.length };
+}
+
+function recompute(){
+  const cutoff = Date.now() - SAMPLE_WINDOW_MS;
+  S.samples = S.samples.filter(s => s.at >= cutoff).slice(-MAX_SAMPLES);
+  S.est = intersect(S.samples);
+
+  const rtts = S.samples.map(s => s.rttMs);
+  const nets = S.samples.map(s => Math.min(s.connectMs == null ? Infinity : s.connectMs, s.rttMs))
+                        .filter(v => isFinite(v));
+  S.netRtt = nets.length ? Math.min(...nets) : null;
+  S.rttMedian = median(rtts);
+  S.converged = !!(S.est && S.est.err <= goodEnoughMs());
+}
+
+function upstreamMs(){ return S.netRtt == null ? null : S.netRtt / 2; }
+
+/* 클릭 도달 시각의 총 오차(±ms): 시계 오차 + 상행 지연 불확실성 */
+function totalErr(){
+  if(!S.est) return null;
+  const jitter = (S.rttMedian != null && S.netRtt != null) ? Math.max(0, S.rttMedian - S.netRtt) / 2 : 0;
+  return S.est.err + (S.netRtt == null ? 0 : S.netRtt / 4) + jitter;
+}
+
+/* ---------- 프로브 ---------- */
+async function probeOnce(){
+  const res = await fetch(`/api/probe?url=${encodeURIComponent(S.url)}&method=HEAD`, { cache: "no-store" });
+  const d = await res.json();
+  if(!d.ok) throw new Error(d.error || "요청 실패");
+  return d;
+}
+
+function addSample(d){
+  if(d.dateMs == null){
+    S.lastError = "이 서버는 Date 헤더를 주지 않아 서버시간을 알 수 없습니다.";
+    return false;
+  }
+  if(d.ageSec != null && d.ageSec > 0){
+    S.lastError = `중간 캐시(Age=${d.ageSec}s)에서 온 응답이라 버렸습니다. 캐시되지 않는 주소를 써 보세요.`;
+    return false;
+  }
+  if(d.rttMs > 3000) return false;
+  S.samples.push({
+    L: d.dateMs - d.t1,
+    U: d.dateMs + 1000 - d.t0,
+    rttMs: d.rttMs,
+    connectMs: d.connectMs,
+    at: Date.now(),
+  });
+  S.lastError = null;
+  return true;
+}
+
+/* 다음 프로브까지 기다릴 시간.
+   초기에는 빠르게 여러 번, 이후에는 서버의 '초가 바뀌는 순간' 근처를 노린다
+   (경계에 걸친 샘플일수록 구간이 크게 좁아진다). */
+function nextDelay(){
+  const n = S.samples.length;
+  if(n < 6) return 240 + Math.random() * 120;
+  // 아직 추정이 거칠면 초 경계를 겨냥해도 빗나가므로 무작위 위상으로 계속 모은다
+  if(!S.est || S.est.err > 80) return 240 + Math.random() * 180;
+
+  const up = upstreamMs() ?? 20;
+  const serverNow = Date.now() + S.est.mid;
+  let wait = (1000 - (serverNow % 1000)) - up + (Math.random() * 50 - 25);
+  while(wait < 160) wait += 1000;
+
+  if(S.converged){
+    // 유지 단계: 드리프트만 따라가면 되므로 2~3초에 한 번
+    while(wait < 2000) wait += 1000;
+  }
+  return wait;
+}
+
+async function syncLoop(){
+  let failures = 0;
+  while(S.running){
+    try{
+      const d = await probeOnce();
+      addSample(d);
+      recompute();
+      failures = 0;
+      if(S.lastError) showMsg(S.lastError, "warn");
+      else if(S.est) showMsg(`동기화 중 — 유효 샘플 ${S.est.n}/${S.est.total}, 서버: ${d.server || "알 수 없음"}`, "ok");
+    }catch(err){
+      failures++;
+      showMsg(`측정 실패: ${err.message}`, "err");
+      if(failures >= 5){ stopSync(); showMsg(`측정 실패로 중단했습니다: ${err.message}`, "err"); return; }
+    }
+    render();
+    await new Promise(r => setTimeout(r, failures ? 1200 * failures : nextDelay()));
+  }
+}
+
+function startSync(){
+  let raw = $("url").value.trim();
+  if(!raw){ showMsg("주소를 입력하세요.", "err"); return; }
+  if(!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+  $("url").value = raw;
+  S.url = raw;
+  S.samples = []; S.est = null; S.converged = false; S.lastError = null;
+  S.running = true;
+  $("btnSync").disabled = true;
+  $("btnStop").disabled = false;
+  $("btnClick").disabled = false;
+  localStorage.setItem("st_url", raw);
+  showMsg("동기화 시작…", "ok");
+  syncLoop();
+}
+
+function stopSync(){
+  S.running = false;
+  $("btnSync").disabled = false;
+  $("btnStop").disabled = true;
+}
+
+/* ---------- 화면 ---------- */
+function render(){
+  const est = S.est;
+  $("sOffset").textContent = est ? fmtMs(est.mid, 0) : "–";
+  $("sRtt").textContent = S.netRtt == null ? "–" : fmtMs(S.netRtt, 1);
+  $("sUp").textContent = upstreamMs() == null ? "–" : fmtMs(upstreamMs(), 1);
+  $("sN").textContent = est ? `${est.n} / ${est.total}` : "–";
+
+  if(est){
+    const e = totalErr();
+    const grade = e <= 20 ? "정밀" : e <= 60 ? "보통" : "거침";
+    $("acc").innerHTML = `오차 <b>±${e.toFixed(0)}ms</b> · ${grade} · 내 시계보다 ${est.mid >= 0 ? "빠름" : "느림"} ${Math.abs(est.mid).toFixed(0)}ms`;
+  }else{
+    $("acc").textContent = S.running ? "측정 중…" : "동기화 대기 중";
+  }
+}
+
+function tick(){
+  const est = S.est;
+  const clockEl = $("clock");
+  if(est){
+    const now = Date.now() + est.mid;
+    const f = fmtClock(now);
+    clockEl.classList.remove("stale");
+    clockEl.innerHTML = `${f.hms}<span class="ms">.${f.ms}</span>`;
+    $("secbar").style.width = ((now % 1000) / 10).toFixed(1) + "%";
+    renderCountdown(now);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- 클릭 측정 ---------- */
+function serverNow(){ return S.est ? Date.now() + S.est.mid : null; }
+
+async function onApplyClick(ev){
+  if(!S.est){ showMsg("먼저 동기화하세요.", "err"); return; }
+  const handlerWall = Date.now();
+
+  // 신뢰된 이벤트의 timeStamp 는 '실제로 물리적으로 눌린 순간'이다.
+  const pressWall = performance.timeOrigin + ev.timeStamp;
+  let inputLag = handlerWall - pressWall;
+  if(!isFinite(inputLag) || inputLag < 0 || inputLag > 2000) inputLag = null;
+  if(inputLag != null){ S.inputLags.push(inputLag); if(S.inputLags.length > 20) S.inputLags.shift(); }
+
+  const up = upstreamMs();
+  const rec = {
+    i: S.clicks.length + 1,
+    pressServer: (inputLag == null ? handlerWall : pressWall) + S.est.mid,
+    arrivalServer: up == null ? null : handlerWall + S.est.mid + up,
+    inputLag,
+    upstream: up,
+    err: totalErr(),
+    measured: false,
+  };
+  S.clicks.push(rec);
+  renderLog();
+
+  if($("realSend").checked){
+    try{
+      const d = await probeOnce();
+      addSample(d);
+      recompute();
+      // 실제로 보낸 요청: 서버 도착은 [t0, t1] 사이, 최선의 추정은 t0 + 상행지연
+      const u = upstreamMs() ?? 0;
+      rec.arrivalServer = d.t0 + S.est.mid + u;
+      rec.windowLo = d.t0 + S.est.mid;
+      rec.windowHi = d.t1 + S.est.mid;
+      rec.upstream = u;
+      rec.err = totalErr();
+      rec.measured = true;
+      renderLog();
+      render();
+    }catch(err){
+      showMsg(`실제 전송 실패: ${err.message}`, "err");
+    }
+  }
+}
+
+function renderLog(){
+  const tb = $("log").querySelector("tbody");
+  const target = targetServerMs();
+  tb.innerHTML = "";
+  for(const c of [...S.clicks].reverse().slice(0, 12)){
+    const tr = document.createElement("tr");
+    let diff = "–", cls = "";
+    if(target != null && c.arrivalServer != null){
+      const d = c.arrivalServer - target;
+      diff = (d >= 0 ? "+" : "") + d.toFixed(0) + "ms";
+      cls = Math.abs(d) <= 100 && d >= 0 ? "hit" : "";
+    }
+    tr.innerHTML =
+      `<td>${c.i}${c.measured ? " <span style='color:#3ddc84'>●</span>" : ""}</td>` +
+      `<td>${fmtFull(c.pressServer)}</td>` +
+      `<td>${c.arrivalServer == null ? "–" : fmtFull(c.arrivalServer)}</td>` +
+      `<td>${c.inputLag == null ? "–" : fmtMs(c.inputLag, 0)}</td>` +
+      `<td>${fmtMs(c.upstream, 1)}</td>` +
+      `<td>±${c.err == null ? "–" : c.err.toFixed(0)}ms</td>` +
+      `<td class="${cls}">${diff}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+/* ---------- 목표 시각 / 카운트다운 ---------- */
+function targetServerMs(){
+  const ds = $("tDate").value, ts = $("tTime").value.trim();
+  const m = /^(\d{1,2}):(\d{2}):(\d{2})(?:[.:](\d{1,3}))?$/.exec(ts);
+  if(!ds || !m) return null;
+  const [y, mo, dd] = ds.split("-").map(Number);
+  const ms = m[4] ? Number(m[4].padEnd(3, "0")) : 0;
+  return new Date(y, mo - 1, dd, Number(m[1]), Number(m[2]), Number(m[3]), ms).getTime();
+}
+
+let lastBeepSec = null, audioCtx = null;
+function beep(freq, dur){
+  if(!$("beep").checked) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = freq; o.type = "sine";
+    g.gain.value = 0.15;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }catch(e){ /* 소리는 없어도 그만 */ }
+}
+
+function renderCountdown(srvNow){
+  const target = targetServerMs();
+  if(target == null){ $("cd").textContent = "--:--.---"; $("cue").className = "cue"; $("cue").textContent = ""; return; }
+
+  const up = upstreamMs() ?? 0;
+  const lag = median(S.inputLags) ?? 0;
+  const clickAt = target - up - lag;          // 이 시각에 누르면 정각에 도착한다
+  const left = clickAt - srvNow;
+
+  const abs = Math.abs(left);
+  const sign = left < 0 ? "-" : "";
+  $("cd").textContent = `${sign}${p2(Math.floor(abs / 60000))}:${p2(Math.floor(abs % 60000 / 1000))}.${p3(Math.floor(abs % 1000))}`;
+
+  const cue = $("cue");
+  if(left <= 0 && left > -1500){ cue.className = "cue go"; cue.textContent = "지금 누르세요"; }
+  else if(left > 0 && left <= 5000){ cue.className = "cue soon"; cue.textContent = "준비"; }
+  else { cue.className = "cue"; cue.textContent = ""; }
+
+  if(left > 0 && left <= 3200){
+    const sec = Math.ceil(left / 1000);
+    if(sec !== lastBeepSec){ lastBeepSec = sec; beep(880, 0.06); }
+  }else if(left <= 0 && lastBeepSec !== 0){ lastBeepSec = 0; beep(1320, 0.25); }
+  else if(left > 3200){ lastBeepSec = null; }
+
+  $("advice").textContent =
+    `목표 ${fmtFull(target)} 에 신호가 도착하려면, 상행 지연 ${up.toFixed(0)}ms` +
+    (lag ? ` + 입력 지연 ${lag.toFixed(0)}ms` : "") +
+    ` 만큼 앞선 ${fmtFull(clickAt)} 에 누르세요.`;
+}
+
+/* ---------- 초기화 ---------- */
+$("btnSync").addEventListener("click", startSync);
+$("btnStop").addEventListener("click", stopSync);
+$("btnClick").addEventListener("click", onApplyClick);
+$("url").addEventListener("keydown", e => { if(e.key === "Enter") startSync(); });
+$("url").value = localStorage.getItem("st_url") || "";
+const today = new Date();
+$("tDate").value = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
+$("beep").addEventListener("change", () => { if($("beep").checked) beep(660, 0.05); });
+
+requestAnimationFrame(tick);
+render();
+</script>
+</body>
+</html>
